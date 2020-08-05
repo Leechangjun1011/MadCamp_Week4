@@ -23,6 +23,8 @@ public class ListViewMyProjectDTO implements Serializable {
     private boolean initial_play = true;
     private MediaPlayer dto_mp;
     private int progress;
+    private String mp3_name;
+    private boolean isPlaying;
 
     public String getName() {
         return Name;
@@ -61,7 +63,11 @@ public class ListViewMyProjectDTO implements Serializable {
     public int getProgress(){return progress;}
     public void setProgress(int pg){this.progress = pg;}
 
+    public String getMp3_name(){return mp3_name;}
+    public void setMp3_name(String m_name){this.mp3_name = m_name;}
 
+    public boolean getIsPlaying(){return isPlaying;}
+    public void setIsPlaying(boolean play){this.isPlaying = play;}
 
 
 

@@ -18,6 +18,7 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -66,18 +67,23 @@ public class MainActivity extends AppCompatActivity{
     private ListView listView;
     private ListViewCustomAdapter adapter;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
 
+
         tedPermission();
+        //TODO : Permission Deny leads to critical error while app running
 /*
         Button RecordButton = (Button) findViewById(R.id.recordPageBtn);
         Button ListButton = (Button) findViewById(R.id.ListPageBtn);
         Button downloadButton = (Button) findViewById(R.id.downloadBtn);
 */
+        //wait until permission check done
+
 
         listView = (ListView) findViewById(R.id.lv_explore);
         adapter = new ListViewCustomAdapter();
@@ -137,15 +143,7 @@ public class MainActivity extends AppCompatActivity{
         });
 */
 
-        SharedPreferences pref = getApplicationContext().getSharedPreferences("checkFirst", getApplicationContext().MODE_PRIVATE);
-        boolean checkFirst = pref.getBoolean("checkFirst", false);
-        if(checkFirst == false){//앱 최초 실행시
-            SharedPreferences.Editor editor = pref.edit();
-            editor.putBoolean("checkFirst",true);
-            editor.commit();
-            File dir = new File("/sdcard/" + AppName);
-            if(!dir.exists()) dir.mkdirs();
-        }
+
 
 
 
@@ -153,6 +151,7 @@ public class MainActivity extends AppCompatActivity{
 
 
         listView.setAdapter(adapter);
+
 
 
     }
@@ -164,6 +163,21 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onPermissionGranted() {
                 // 권한 요청 성공
+                SharedPreferences pref = getApplicationContext().getSharedPreferences("checkFirst", getApplicationContext().MODE_PRIVATE);
+                boolean checkFirst = pref.getBoolean("checkFirst", false);
+                if(checkFirst == false){//앱 최초 실행시
+                    //System.out.println("First run @@@@@@@@@@@@@@@@@@@@@#$%#$^@^#$%@#$^@^#");
+                    SharedPreferences.Editor editor = pref.edit();
+                    editor.putBoolean("checkFirst",true);
+                    editor.commit();
+                    File dir = new File("/sdcard/" + AppName);
+
+                    if(!dir.exists()) {
+                        //System.out.println("Try mkdirs @@@@@@@@@@@@@@@@@@@@@#$%#$^@^#$%@#$^@^#");
+                        dir.mkdirs();
+                    }
+                    //else System.out.println("Already exist @@@@@@@@@@@@@@@@@@@@@#$%#$^@^#$%@#$^@^#");
+                }
 
             }
 
@@ -179,6 +193,7 @@ public class MainActivity extends AppCompatActivity{
                 .setDeniedMessage(getResources().getString(R.string.permission_1))
                 .setPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO})
                 .check();
+
 
     }
 

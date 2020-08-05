@@ -1,6 +1,9 @@
 package com.example.useretrofit2.myproject;
 
+import android.annotation.SuppressLint;
+import android.content.res.TypedArray;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -13,6 +16,24 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.useretrofit2.ListViewCustomAdapter;
 import com.example.useretrofit2.R;
+import com.example.useretrofit2.downLoad2App;
+import com.google.gson.JsonArray;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 
 public class MyProjectActivity extends AppCompatActivity {
 
@@ -29,6 +50,7 @@ public class MyProjectActivity extends AppCompatActivity {
     boolean isPlaying = false; // 재생중?
     private ListView listView;
     private ListViewMyProjectAdapter adapter;
+
 
 
     class MyThread extends Thread {
@@ -90,7 +112,7 @@ public class MyProjectActivity extends AppCompatActivity {
             }
         });
 
-        mediaPlayer = MediaPlayer.create(MyProjectActivity.this, R.raw.wish);
+        mediaPlayer = MediaPlayer.create(MyProjectActivity.this, R.raw.meteor);
         mediaPlayer.setLooping(false);//무한반복 x
 
         int playtime = mediaPlayer.getDuration(); // 노래 재생시간(ms)
@@ -142,7 +164,7 @@ public class MyProjectActivity extends AppCompatActivity {
         adapter = new ListViewMyProjectAdapter();
         adapter.setActivity(MyProjectActivity.this);
 
-        ListViewMyProjectDTO dto_1 = new ListViewMyProjectDTO();
+        /*ListViewMyProjectDTO dto_1 = new ListViewMyProjectDTO();
         dto_1.setName("Vocal Added");
         dto_1.setMp3_id(R.raw.fiction);
         adapter.addItem(dto_1);
@@ -180,9 +202,22 @@ public class MyProjectActivity extends AppCompatActivity {
         ListViewMyProjectDTO dto_8 = new ListViewMyProjectDTO();
         dto_8.setName("Keyboard2 Added");
         dto_8.setMp3_id(R.raw.empty);
-        adapter.addItem(dto_8);
+        adapter.addItem(dto_8);*/
 
         listView.setAdapter(adapter);
+
+
+
+        Button reqSend = (Button) findViewById(R.id.reqSendBtn);
+        reqSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MyProjectTask mytask = (MyProjectTask) new MyProjectTask().execute("http://192.168.0.112:3001/api/project/detail");
+
+            }
+        });
+
+
 
     }
 
@@ -193,6 +228,129 @@ public class MyProjectActivity extends AppCompatActivity {
             mediaPlayer.release();
             mediaPlayer = null;
         }
+    }
+
+
+
+
+    public class MyProjectTask extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... urls) {
+
+            try {
+                //JSONObject 만들고 key value 형식으로 값 저장
+                JSONObject jsonObject = new JSONObject();
+
+                if(urls[0].contains("/api/project/detail")){//project detail request
+                    jsonObject.accumulate("projectID", "sample_project");
+                }
+
+                HttpURLConnection con = null;
+                BufferedReader reader = null;
+
+                try {
+
+                    URL url = new URL(urls[0]);
+                    //연결
+                    con = (HttpURLConnection) url.openConnection();
+
+                    con.setRequestMethod("POST");//POST 방식으로 보냄
+                    con.setRequestProperty("Cache-Control", "no-cache");//캐시 설정
+                    con.setRequestProperty("Content-Type", "application/json");//application jSON 형식으로 전송
+                    con.setRequestProperty("Accept", "application/json");
+                    //con.setRequestProperty("Accept", "text/html");//서버에 response 데이터를 html로 받음
+                    con.setDoOutput(true);//Outstream 으로 post 데이터를 넘겨주겠다는 의미
+                    con.setDoInput(true);//Inputstream으로 서버로부터 응답을 받겠다는 의미
+
+                    con.connect();
+
+                    //서버로 보내기위해서 스트림 생성
+                    OutputStream outStream = con.getOutputStream();
+
+                    //버퍼를 생성하고 넣음
+                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outStream));
+                    writer.write(jsonObject.toString());
+                    writer.flush();
+                    writer.close();
+
+                    //서버로 부터 데이터를 받음
+                    InputStream stream = con.getInputStream();
+
+                    reader = new BufferedReader(new InputStreamReader(stream));
+
+                    StringBuffer buffer = new StringBuffer();
+
+                    String line = "";
+                    while ((line = reader.readLine()) != null) {
+                        buffer.append(line);
+                    }
+
+                    System.out.println("@@@@@@@@@@@@@@@@@end of asynctask");
+
+                    //서버로 부터 받은 값을 리턴
+                    return buffer.toString();
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (con != null) {
+                        con.disconnect();
+                    }
+                    try {
+                        if (reader != null) {
+                            reader.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return null;
+
+        }
+
+        @SuppressLint("ResourceType")
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            //System.out.println(result);
+            try {
+                JSONObject json = new JSONObject(result);
+                JSONArray json_array = json.getJSONArray("commits");
+
+                for(int i=0;i<json_array.length();i++){
+                    JSONObject commitObject = json_array.getJSONObject(i);//commitObject includes date, artistID, commitID, category. We need commitID.
+
+                    String mp3_name = commitObject.getString("commitID");
+
+                    //downLoad2App down2app = (downLoad2App) new downLoad2App().execute(mp3_name + ".mp3");
+
+                    ListViewMyProjectDTO dto = new ListViewMyProjectDTO();
+                    dto.setName(commitObject.getString("commitID"));
+                    dto.setMp3_name(commitObject.getString("commitID"));
+
+                    adapter.addItem(dto);
+
+                    adapter.notifyDataSetChanged();
+
+                    System.out.println("mp3 file name : " + commitObject.getString("commitID"));
+                }
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            //System.out.println(result);
+
+        }
+
     }
 
 
