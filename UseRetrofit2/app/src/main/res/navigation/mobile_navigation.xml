@@ -13,13 +13,13 @@
 
     <fragment
         android:id="@+id/navigation_second"
-        android:name="com.example.useretrofit2.myproject.CommitsFragment"
+        android:name="com.example.useretrofit2.myproject.commits.CommitsFragment"
         android:label="@string/title_second"
         tools:layout="@layout/fragment_second" />
 
     <fragment
         android:id="@+id/navigation_third"
-        android:name="com.example.useretrofit2.myproject.RequestsFragment"
+        android:name="com.example.useretrofit2.myproject.requests.RequestsFragment"
         android:label="@string/title_third"
         tools:layout="@layout/fragment_third" />
 </navigation>

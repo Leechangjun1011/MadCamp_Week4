@@ -29,6 +29,7 @@
         <activity android:name=".ServerFileListActivity"/>
         <activity android:name=".PlayActivity"/>
         <activity android:name=".myproject.MyProjectActivity"/>
+        <activity android:name=".myproject.ProjectDetailActivity"/>
     </application>
 
 </manifest>

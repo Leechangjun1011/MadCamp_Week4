@@ -1,4 +1,4 @@
-package com.example.useretrofit2.myproject;
+package com.example.useretrofit2.myproject.requests;
 
 import android.media.MediaPlayer;
 import android.view.LayoutInflater;
@@ -16,12 +16,12 @@ import com.example.useretrofit2.R;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class ListViewMyProjectAdapter extends BaseAdapter{
+public class RequestsListAdapter extends BaseAdapter{
 
     //TODO : mediaplayer release
 
     private AppCompatActivity m_activity;
-    private ArrayList<ListViewMyProjectDTO> listCustom = new ArrayList<>();
+    private ArrayList<RequestsListDTO> listCustom = new ArrayList<>();
 
     public void setActivity(AppCompatActivity activity){this.m_activity = activity;}
 
@@ -44,15 +44,21 @@ public class ListViewMyProjectAdapter extends BaseAdapter{
     public View getView(int position, View convertView, ViewGroup parent) {
         CustomViewHolder holder;
         if (convertView == null) {
-            convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.commited_item, null, false);
+            convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.requests_list_item, null, false);
 
             holder = new CustomViewHolder();
 
-            holder.textName = (TextView) convertView.findViewById(R.id.commit_title);
-            holder.play = (ImageButton) convertView.findViewById(R.id.myproject_commit_play);
-            holder.stop = (ImageButton) convertView.findViewById(R.id.myproject_commit_pause);
-            holder.seekBar = (SeekBar) convertView.findViewById(R.id.myproject_commit_seekBar);
-            holder.show_time = (TextView) convertView.findViewById(R.id.show_commit_play_time);
+            holder.textName = (TextView) convertView.findViewById(R.id.project_request_list_title);
+            holder.textAdmin = (TextView) convertView.findViewById(R.id.tv_request_admin);
+            holder.textInst = (TextView) convertView.findViewById(R.id.tv_request_instruments);
+            holder.textUpdate = (TextView) convertView.findViewById(R.id.tv_request_recent);
+
+            holder.play = (ImageButton) convertView.findViewById(R.id.myproject_request_list_play);
+            holder.stop = (ImageButton) convertView.findViewById(R.id.myproject_request_list_pause);
+            holder.seekBar = (SeekBar) convertView.findViewById(R.id.myproject_request_list_seekBar);
+            holder.show_time = (TextView) convertView.findViewById(R.id.show_request_list_play_time);
+
+
 
             convertView.setTag(holder);
 
@@ -60,7 +66,7 @@ public class ListViewMyProjectAdapter extends BaseAdapter{
             holder = (CustomViewHolder) convertView.getTag();
         }
 
-        ListViewMyProjectDTO dto = listCustom.get(position);
+        RequestsListDTO dto = listCustom.get(position);
         if(dto.getMediaPlayer() == null){
 
             MediaPlayer mp = new MediaPlayer();
@@ -78,6 +84,10 @@ public class ListViewMyProjectAdapter extends BaseAdapter{
         }
 
         holder.textName.setText(dto.getName());
+        holder.textAdmin.setText(dto.getAdmin());
+        holder.textInst.setText(dto.getInst());
+        holder.textUpdate.setText(dto.getUpdate());
+
         holder.mediaPlayer = dto.getMediaPlayer();
         int dur = holder.mediaPlayer.getDuration();
         if((dur/1000) % 60 < 10) holder.duration_str = (dur/1000)/60 + ":0" + (dur/1000)%60;
@@ -178,13 +188,9 @@ public class ListViewMyProjectAdapter extends BaseAdapter{
         });
 
 
-
-
-
         SynchSeekBar synch = new SynchSeekBar();
         synch.s_holder = holder;
         synch.start();
-
 
         return convertView;
     }
@@ -196,6 +202,9 @@ public class ListViewMyProjectAdapter extends BaseAdapter{
     class CustomViewHolder {
 
         TextView textName;
+        TextView textAdmin;
+        TextView textInst;
+        TextView textUpdate;
         ImageButton play;
         ImageButton stop;
         MediaPlayer mediaPlayer;
@@ -243,16 +252,16 @@ public class ListViewMyProjectAdapter extends BaseAdapter{
     }
 
 
-    public void addItem(ListViewMyProjectDTO dto) {
+    public void addItem(RequestsListDTO dto) {
 
         listCustom.add(dto);
     }
 
-    public void delItem(ListViewMyProjectDTO dto){
+    public void delItem(RequestsListDTO dto){
         listCustom.remove(dto);
     }
 
-    public void modifyItem(int i, ListViewMyProjectDTO dto){
+    public void modifyItem(int i, RequestsListDTO dto){
         listCustom.set(i, dto);
     }
 

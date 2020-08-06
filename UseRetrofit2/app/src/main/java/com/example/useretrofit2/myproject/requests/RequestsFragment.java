@@ -1,25 +1,21 @@
-package com.example.useretrofit2.myproject;
+package com.example.useretrofit2.myproject.requests;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.SeekBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.example.useretrofit2.R;
+import com.example.useretrofit2.myproject.commits.CommitsFragment;
+import com.example.useretrofit2.myproject.commits.CommitsListAdapter;
+import com.example.useretrofit2.myproject.commits.CommitsListDTO;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,61 +29,33 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
-public class MyProjectFragment extends Fragment {
+public class RequestsFragment extends Fragment {
 
     private ListView listView;
-    private ProjectListAdapter adapter;
+    private RequestsListAdapter adapter;
     private String userid = "myuserid";
-
-
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        final View root = inflater.inflate(R.layout.fragment_first, container, false);
+        final View root = inflater.inflate(R.layout.fragment_third, container, false);
 
-
-
-        listView = (ListView) root.findViewById(R.id.lv_myproject_list);
-        adapter = new ProjectListAdapter();
+        listView = (ListView) root.findViewById(R.id.lv_myproject_request_list);
+        adapter = new RequestsListAdapter();
 
         adapter.setActivity((AppCompatActivity) getActivity());
 
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                System.out.println("Item clicked!");
-                Intent intent = new Intent(root.getContext(), ProjectDetailActivity.class);
-
-                intent.putExtra("projectID", ((ProjectListDTO) adapter.getItem(i)).getName());
-
-                startActivity(intent);
-
-            }
-        });
-
-
-
-
-        MyProjectListTask mytask = (MyProjectListTask) new MyProjectListTask().execute("http://192.168.0.112:3001/api/user/detail");
-
         listView.setAdapter(adapter);
+
+        MyProjectRequestsListTask mytask = (MyProjectRequestsListTask) new MyProjectRequestsListTask().execute("http://192.168.0.112:3001/api/user/detail");
 
         return root;
     }
 
-
-
-    public class MyProjectListTask extends AsyncTask<String, String, String> {
+    public class MyProjectRequestsListTask extends AsyncTask<String, String, String> {
 
         @Override
         protected String doInBackground(String... urls) {
@@ -176,14 +144,15 @@ public class MyProjectFragment extends Fragment {
             //System.out.println(result);
             try {
                 JSONObject json = new JSONObject(result);
-                JSONArray json_array = json.getJSONArray("projects");
+                JSONArray json_array = json.getJSONArray("request_list");
                 System.out.println(json_array);
 
                 for(int i=0;i<json_array.length();i++){
-                    String proj_name = json_array.getString(i);//commitObject includes date, artistID, commitID, category. We need commitID.
+                    JSONObject commit_elem = json_array.getJSONObject(i);
+                    String proj_name = commit_elem.getString("projectID");//commitObject includes date, artistID, commitID, category. We need commitID.
 
 
-                    MyProjectDetailTask getProjDetail = (MyProjectDetailTask) new MyProjectDetailTask();
+                    MyProjectRequestsDetailTask getProjDetail = (MyProjectRequestsDetailTask) new MyProjectRequestsDetailTask();
                     getProjDetail.reqProjectID = proj_name;
                     getProjDetail.execute("http://192.168.0.112:3001/api/project/detail");
 
@@ -207,7 +176,7 @@ public class MyProjectFragment extends Fragment {
     }
 
 
-    public class MyProjectDetailTask extends AsyncTask<String, String, String> {
+    public class MyProjectRequestsDetailTask extends AsyncTask<String, String, String> {
 
         String reqProjectID;
 
@@ -302,7 +271,7 @@ public class MyProjectFragment extends Fragment {
                 JSONArray admins = json.getJSONArray("admin");
                 String admin_name = "";
 
-                ProjectListDTO dto = new ProjectListDTO();
+                RequestsListDTO dto = new RequestsListDTO();
                 dto.setName(reqProjectID);
                 dto.setUpdate(update);
 
@@ -428,11 +397,5 @@ public class MyProjectFragment extends Fragment {
         }
 
     }
-
-
-
-
-
-
 
 }
