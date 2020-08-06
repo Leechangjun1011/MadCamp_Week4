@@ -73,6 +73,8 @@ public class ListViewMyProjectAdapter extends BaseAdapter{
 
             MediaPlayer mp = new MediaPlayer();
             try {
+                System.out.println(dto.getMp3_name());
+
                 mp.setDataSource("/sdcard/AppName/" + dto.getMp3_name() + ".mp3");
                 mp.prepare();
             } catch (IOException e) {
@@ -88,6 +90,7 @@ public class ListViewMyProjectAdapter extends BaseAdapter{
         int dur = holder.mediaPlayer.getDuration();
         if((dur/1000) % 60 < 10) holder.duration_str = (dur/1000)/60 + ":0" + (dur/1000)%60;
         else holder.duration_str = (dur/1000)/60 + ":" + (dur/1000)%60;
+
 
         holder.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -111,12 +114,19 @@ public class ListViewMyProjectAdapter extends BaseAdapter{
             @Override
             public void onStopTrackingTouch(SeekBar sb) {
                 if (!dto.checkInitialPlay()) {
+
                     dto.setIsPlaying(true);
                     holder.isPlaying = true;
                     int new_pos = sb.getProgress(); // 사용자가 움직여놓은 위치
+                    dto.setProgress(new_pos);
+
 
                     holder.mediaPlayer.seekTo(new_pos);
+                    System.out.println("Try mediaplayer start at " + new_pos);
                     holder.mediaPlayer.start();
+
+                    System.out.println("mediaplayer started@@");
+
                     MyThread myThread = new MyThread();
                     myThread.c_holder = holder;
 
@@ -132,6 +142,7 @@ public class ListViewMyProjectAdapter extends BaseAdapter{
                 if (dto.checkInitialPlay()) {//최초 play
 
                     holder.seekBar.setMax(holder.mediaPlayer.getDuration()); // 시크바 최대 범위를 노래 재생시간으로 설정
+
                     holder.seekBar.setProgress(0);
                     holder.mediaPlayer.start();
 
@@ -144,8 +155,11 @@ public class ListViewMyProjectAdapter extends BaseAdapter{
                     myThread.start();
 
                 } else {
+
+
                     holder.mediaPlayer.seekTo(dto.getProgress());//멈춘 시점부터 재시작
                     holder.mediaPlayer.start();
+
                     dto.setIsPlaying(true);
                     holder.isPlaying = true;
 
@@ -170,6 +184,10 @@ public class ListViewMyProjectAdapter extends BaseAdapter{
                 }
             }
         });
+
+
+
+
 
         SynchSeekBar synch = new SynchSeekBar();
         synch.s_holder = holder;
@@ -207,6 +225,7 @@ public class ListViewMyProjectAdapter extends BaseAdapter{
         public void run(){//Thread 시작할때 콜백되는 메서드
             //시크바 막대기 조금씩 움직이기 (노래 끝날 때 까지 반복)
             while(c_holder.isPlaying){
+
                 int curr_pos = c_holder.mediaPlayer.getCurrentPosition();
                 c_holder.seekBar.setProgress(curr_pos);
 
